@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ESTE ES MI PROYECTO - Multitarea Interactivo</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --morado: #b94cff;
+            --azul: #22b0ff;
+            --verde: #00ffb0;
+            --amarillo: #ffe85b;
+            --rosa: #f766b8;
+            --naranja: #ffa464;
+            --cyan: #3affd4;
+            --gris: #303040;
+            --gris2: #161622;
+            --text: #fff;
+            --neon: rgba(255,255,255,0.10);
+            --radius: 30px;
+        }
+        html, body { background: var(--gris2); color: var(--text); font-family: 'Montserrat',Arial,sans-serif; height:100%; margin:0; padding:0;}
+        .screen    { min-height:100vh; width:100vw; display:none; align-items:center; justify-content:center; background:var(--gris2); position:fixed; top:0; left:0;}
+        .screen.active { display:flex !important; z-index:10; }
+        /* Portada */
+        .intro-card { background:rgba(30,30,50,0.96); padding:44px 36px 38px 36px; border-radius:22px; box-shadow:0 0 60px 4px var(--neon); text-align:center; border:1.5px solid var(--azul);}
+        .intro-card .neon-title { font-family:'Orbitron','Montserrat',Arial,sans-serif; font-size:2.4em; font-weight:900; letter-spacing:2.5px; margin-bottom:18px; background:linear-gradient(90deg,#b94cff 0%,#22b0ff 60%,#ffe85b 100%); background-size:300% 300%; -webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 2px 16px #0005;}
+        .neon-btn {font-family:'Montserrat',Arial,sans-serif; font-size:1.1em; padding:14px 38px; border-radius:var(--radius); border:none; cursor:pointer; font-weight:700; margin-top:32px; background:linear-gradient(90deg, #b94cff, #22b0ff 80%); color:#fff; box-shadow:0 0 12px 2px var(--neon);}
+        .neon-btn:hover { background:var(--azul); }
+        /* Menú principal */
+        .main-menu { display: flex; flex-direction: column; align-items: center; }
+        .main-title { font-family: 'Orbitron', 'Montserrat', Arial, sans-serif; font-size: 2em; margin-bottom: 32px; color: var(--morado); text-shadow: 0 0 16px var(--neon);}
+        .program-menu { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; margin-top: 10px;}
+        .prog-btn { min-width:160px; padding: 15px 25px; font-size: 1.1em; font-weight: 700; border-radius: var(--radius); border: none; margin: 0 8px 16px 8px; cursor: pointer; color: #fff; background: var(--gris); transition:transform 0.13s;}
+        .prog-btn.ia          { background: linear-gradient(120deg,var(--morado),var(--azul)); border: 2px solid var(--morado);}
+        .prog-btn.frutas      { background: linear-gradient(120deg,var(--rosa),var(--naranja)); border:2px solid var(--rosa);}
+        .prog-btn.agenda      { background: linear-gradient(120deg,var(--verde),var(--gris)); border:2px solid var(--verde); color: #222;}
+        .prog-btn.calc        { background: linear-gradient(120deg,var(--amarillo),var(--gris)); border:2px solid var(--amarillo); color:#222;}
+        .prog-btn.ciclos      { background: linear-gradient(120deg,var(--azul),var(--gris)); border:2px solid var(--azul);}
+        .prog-btn.combos      { background: linear-gradient(120deg,var(--naranja),var(--gris)); border:2px solid var(--naranja);}
+        .prog-btn.comparacion { background: linear-gradient(120deg,var(--cyan),var(--gris)); border:2px solid var(--cyan); color:#222;}
+        .prog-btn:hover {transform:scale(1.07);}
+        /* Selección idioma */
+        .lang-card { background:rgba(40,40,60,0.97); border-radius:18px; box-shadow:0 0 18px 3px var(--neon); padding: 30px 22px 22px 22px; text-align:center; max-width:350px; margin:auto;}
+        .lang-title {font-size:1.3em; color:var(--morado); font-family:'Orbitron'; margin-bottom:14px;}
+        .lang-select { font-size:1.02em; padding:10px 24px; border-radius:10px; border:1.2px solid var(--azul); margin-bottom:18px; background:#23233a; color:var(--azul);}
+        .lang-btn { background:linear-gradient(90deg,var(--morado),var(--azul)); color:#fff; font-size:1.02em; padding:10px 26px; border-radius:14px; border:none; cursor:pointer; font-weight:700; margin-top:8px;}
+        .lang-btn:hover { background:var(--azul);}
+        /* Programa */
+        .module-ventana { background: #23233a; border-radius: 32px; box-shadow: 0 0 80px 5px #0005, 0 0 0 3px var(--gris); padding: 32px 16px 30px 16px; max-width: 430px; min-width:260px; width: 97vw; min-height: 56vh; margin: 0 auto; color:#fff; position:relative; display: flex; flex-direction: column; align-items: center; animation: fadein .7s cubic-bezier(.6,-0.28,.74,.05);}
+        @keyframes fadein { from{opacity:0;transform:translateY(60px) scale(.95);} to{opacity:1;transform:translateY(0) scale(1);} }
+        .module-title { font-family: 'Orbitron'; font-size: 1.4em; margin: 0 0 14px 0; text-align:center; letter-spacing:1px; }
+        /* IA de Voces Especial */
+        .ia-vistosa { background: linear-gradient(120deg,#221a32 0%,#432d86 100%); border: 4px solid var(--morado); box-shadow:0 0 60px 8px var(--azul); padding:38px 20px 36px 20px; border-radius:40px; max-width:480px; min-width: 280px;}
+        .ia-vistosa .module-title { font-size: 2em; color: var(--morado); text-shadow: 0 0 16px var(--morado);}
+        .ia-vistosa label, .ia-vistosa select, .ia-vistosa textarea, .ia-vistosa button { font-size:1.1em;}
+        .ia-vistosa label { color:var(--azul);}
+        .ia-vistosa textarea {width:95%; min-height:55px; background:#191828; color:#fff; margin-bottom:12px;}
+        .ia-vistosa select   {background:#23233a; color:var(--morado); border:1.5px solid var(--azul);}
+        .ia-vistosa #iaSpeakBtn { background: linear-gradient(90deg,var(--morado),var(--azul)); color:#fff; border-radius:18px;}
+        .ia-vistosa #iaSpeakBtn:hover { background:var(--azul);}
+        /* Botón regresar */
+        .regreso-btn { position: absolute; top: 20px; left: 20px; font-weight: bold; font-size: 1em; padding: 7px 20px; border: none; border-radius: 14px; cursor: pointer; z-index:10; color: #fff; background: #28293e; border:2px solid #555;}
+        .regreso-btn:hover { background: #fff; color: #191828;}
+        /* Frutas: lista seleccionada */
+        #frutasListEspecial li.selected { background:rgba(184,76,255,0.14);}
+        .result, .combo-result, .compRes, .ciclosRes {font-size: 1.11em; color: var(--amarillo); margin: 15px 0;}
+        /* Inputs */
+        .module-ventana input, .module-ventana select, .module-ventana textarea, .module-ventana button { font-size: 1em; border-radius: 8px; border: none; margin: 5px 0 10px 0; padding: 8px;}
+        .module-ventana label { font-weight: 500; }
+    </style>
+</head>
+<body>
+    <!-- Portada -->
+    <div class="screen active" id="introScreen">
+        <div class="intro-card">
+            <div class="neon-title">ESTE ES MI PROYECTO</div>
+            <div class="intro-label">Participantes:</div>
+            <div class="intro-names">Alonso Ventura Antonio<br>Fernando Rodriguez Ayala</div>
+            <div class="intro-charge">A cargo: Miriam Margarita Mendoza Lucero</div>
+            <div class="intro-group">Grupo: 404 INFO</div>
+            <button class="neon-btn" id="btnContinuar">CONTINUAR</button>
+        </div>
+    </div>
+    <!-- Menú principal -->
+    <div class="screen" id="mainMenuScreen">
+        <div class="main-menu">
+            <div class="main-title">Hola a todos, este es nuestro proyecto</div>
+            <div class="program-menu">
+                <button class="prog-btn ia" id="btnIa">🌟 IA de Voces</button>
+                <button class="prog-btn frutas" id="btnFrutas">🍉 Lista de Frutas</button>
+                <button class="prog-btn agenda" id="btnAgenda">📋 Agenda</button>
+                <button class="prog-btn calc" id="btnCalc">🧮 Calculadora</button>
+                <button class="prog-btn ciclos" id="btnCiclos">🔄 Ciclo de Números</button>
+                <button class="prog-btn combos" id="btnCombos">🍔 Menú de Combos</button>
+                <button class="prog-btn comparacion" id="btnComparacion">🔢 Comparación de Números</button>
+            </div>
+        </div>
+    </div>
+    <!-- Selección idioma para módulos (excepto IA) -->
+    <div class="screen" id="langSelectScreen">
+        <div class="lang-card">
+            <div class="lang-title" id="langSelTitulo">Selecciona el idioma para este módulo</div>
+            <select class="lang-select" id="selectedLang">
+                <option value="es">Español</option><option value="en">Inglés</option>
+                <option value="fr">Francés</option><option value="de">Alemán</option>
+                <option value="it">Italiano</option><option value="pt">Portugués</option>
+                <option value="ru">Ruso</option><option value="zh-CN">Chino</option>
+                <option value="ja">Japonés</option><option value="ar">Árabe</option>
+                <option value="hi">Hindi</option><option value="ko">Coreano</option>
+                <option value="tr">Turco</option><option value="pl">Polaco</option>
+            </select><br>
+            <button class="lang-btn" id="btnLangContinue">Continuar</button>
+        </div>
+    </div>
+    <!-- IA de Voces -->
+    <div class="screen" id="iaScreen">
+        <div class="module-ventana ia-vistosa">
+            <button class="regreso-btn" onclick="volverMenu()">← Menú</button>
+            <div class="module-title">IA de Voces</div>
+            <label>Idioma destino:</label>
+            <select id="lang-ia-select">
+                <option value="es">Español</option><option value="en">Inglés</option>
+                <option value="fr">Francés</option><option value="de">Alemán</option>
+                <option value="it">Italiano</option><option value="pt">Portugués</option>
+                <option value="ru">Ruso</option><option value="zh-CN">Chino</option>
+                <option value="ja">Japonés</option><option value="ar">Árabe</option>
+                <option value="hi">Hindi</option><option value="ko">Coreano</option>
+                <option value="tr">Turco</option><option value="pl">Polaco</option>
+            </select>
+            <label>Estilo de voz:</label>
+            <select id="style-select">
+                <option value="robotic">Robótico</option>
+                <option value="deep">Grave</option>
+                <option value="high">Agudo</option>
+                <option value="neutral">Neutral</option>
+                <option value="fast">Rápido</option>
+                <option value="slow">Lento</option>
+            </select>
+            <label>Texto:</label>
+            <textarea id="ia-text" rows="2" placeholder="Escribe tu frase aquí"></textarea>
+            <button style="margin-top:3px;" id="iaSpeakBtn">Traducir y Hablar</button>
+        </div>
+    </div>
+    <!-- Lista de Frutas -->
+    <div class="screen" id="frutasScreen">
+        <div class="module-ventana">
+            <button class="regreso-btn" onclick="volverMenu()">← Menú</button>
+            <div class="module-title" id="modTitleFrutas">Lista de Frutas</div>
+            <ul id="frutasListEspecial"></ul>
+            <div style="margin-bottom: 6px;">
+                <button data-fruta="Manzana">Manzana</button>
+                <button data-fruta="Plátano">Plátano</button>
+                <button data-fruta="Naranja">Naranja</button>
+                <button data-fruta="Uva">Uva</button>
+                <button data-fruta="Piña">Piña</button>
+                <button data-fruta="Fresa">Fresa</button>
+                <button data-fruta="Melón">Melón</button>
+                <button data-fruta="Cereza">Cereza</button>
+            </div>
+            <input type="text" id="frutaInputEspecial" placeholder="Agregar fruta...">
+            <button style="background:var(--rosa);color:#fff;" id="addFrutaEspecialBtn">Agregar</button>
+            <button style="background:#222;color:var(--rosa);border:1px solid var(--rosa);" id="delFrutaEspecialBtn">Eliminar seleccionada</button>
+        </div>
+    </div>
+    <!-- Agenda -->
+    <div class="screen" id="agendaScreen">
+        <div class="module-ventana">
+            <button class="regreso-btn" onclick="volverMenu()">← Menú</button>
+            <div class="module-title" id="modTitleAgenda">Agenda</div>
+            <input type="text" id="inputTarea" placeholder="Escribe una tarea...">
+            <input type="date" id="inputFecha">
+            <button style="background:var(--verde);color:#111;" id="addTareaBtn">Agregar</button>
+            <div style="display:flex;gap:15px;">
+                <div style="flex:1;">
+                    <label id="lblPendientes">Pendientes</label>
+                    <ul id="list1"></ul>
+                </div>
+                <div style="flex:1;">
+                    <label id="lblSeleccionados">Seleccionados</label>
+                    <ul id="list2"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Calculadora -->
+    <div class="screen" id="calcScreen">
+        <div class="module-ventana">
+            <button class="regreso-btn" onclick="volverMenu()">← Menú</button>
+            <div class="module-title" id="modTitleCalc">Calculadora Interactiva</div>
+            <select id="operation">
+                <option value="" disabled selected>Elige una operación</option>
+                <option value="add">Sumar (+)</option>
+                <option value="subtract">Restar (−)</option>
+                <option value="multiply">Multiplicar (×)</option>
+                <option value="divide">Dividir (÷)</option>
+                <option value="power">Potencia (^)</option>
+                <option value="sqrt">Raíz cuadrada (√)</option>
+                <option value="mod">Módulo (%)</option>
+                <option value="max">Máximo</option>
+                <option value="min">Mínimo</option>
+            </select>
+            <div id="input1Container">
+                <input type="number" id="num1" placeholder="Primer número">
+            </div>
+            <div id="input2Container">
+                <input type="number" id="num2" placeholder="Segundo número">
+            </div>
+            <button style="background:var(--amarillo);color:#111;" id="calcBtn">Calcular</button>
+            <div class="result" id="result"></div>
+        </div>
+    </div>
+    <!-- Ciclo de Números -->
+    <div class="screen" id="ciclosScreen">
+        <div class="module-ventana">
+            <button class="regreso-btn" onclick="volverMenu()">← Menú</button>
+            <div class="module-title" id="modTitleCiclos">Ciclo de Números</div>
+            <label id="lblPreguntaCiclos">¿Hasta qué número deseas sumar?</label>
+            <input type="number" min="1" id="hastaNum" placeholder="Ejemplo: 10">
+            <button style="background:var(--azul);color:#111;" id="sumarCiclosBtn">Calcular suma</button>
+            <div class="result" id="ciclosRes"></div>
+            <div id="ciclosBarras" style="display:flex;align-items:flex-end;gap:3px;margin-top:12px;height:60px;min-width:80px;"></div>
+        </div>
+    </div>
+    <!-- Menú de Combos -->
+    <div class="screen" id="combosScreen">
+        <div class="module-ventana">
+            <button class="regreso-btn" onclick="volverMenu()">← Menú</button>
+            <div class="module-title" id="modTitleCombos">Menú de Combos</div>
+            <form id="combosForm">
+                <div id="combosList"></div>
+                <button type="button" style="background:var(--naranja);color:#111;width:100%;margin-top:10px;" id="combosResumenBtn">Ver resumen y total</button>
+            </form>
+            <div class="result" id="combosSummary"></div>
+        </div>
+    </div>
+    <!-- Comparación -->
+    <div class="screen" id="comparacionScreen">
+        <div class="module-ventana">
+            <button class="regreso-btn" onclick="volverMenu()">← Menú</button>
+            <div class="module-title" id="modTitleComparacion">Comparar Tres Números</div>
+            <input type="number" id="numA" placeholder="Número a">
+            <input type="number" id="numB" placeholder="Número b">
+            <input type="number" id="numC" placeholder="Número c"><br>
+            <button style="background:var(--cyan);color:#111;" id="compBtn">Comparar</button>
+            <div class="compRes" id="compRes"></div>
+        </div>
+    </div>
+    <script>
+        // Diccionario de idiomas bonitos para decir "Traducción a X"
+        const langNames = {
+            "es":"Español","en":"Inglés","fr":"Francés","de":"Alemán","it":"Italiano","pt":"Portugués","ru":"Ruso","zh-CN":"Chino","ja":"Japonés","ar":"Árabe","hi":"Hindi","ko":"Coreano","tr":"Turco","pl":"Polaco"
+        };
+        // Traducción rápida de texto UI (para UI de los módulos, solo lo principal)
+        async function traducirUIFrases(frasesArr, idioma) {
+            if(idioma==="es") return frasesArr;
+            try {
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=${idioma}&dt=t&q=${encodeURIComponent(frasesArr.join('\n'))}`);
+                const data = await res.json();
+                const lineas = data[0].map(x=>x[0]);
+                return lineas;
+            } catch { return frasesArr; }
+        }
+        // Pantallas principales (presentación, menú, idioma, módulos)
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+        // Portada a menú
+        document.getElementById('btnContinuar').onclick = function() { showScreen('mainMenuScreen'); };
+        function volverMenu() { showScreen('mainMenuScreen'); }
+        // --- Lógica de idioma por módulo (excepto IA) ---
+        const moduloConIdioma = ["frutasScreen","agendaScreen","calcScreen","ciclosScreen","combosScreen","comparacionScreen"];
+        let idiomaModulo = {};
+        let moduloPendiente = null;
+        // Abrir módulo: si requiere idioma y no está, pide selección
+        function abrirModulo(id) {
+            if(moduloConIdioma.includes(id)){
+                if(!idiomaModulo[id]){
+                    moduloPendiente = id;
+                    showScreen('langSelectScreen');
+                    return;
+                } else {
+                    showScreen(id);
+                    traducirUI(id, idiomaModulo[id]);
+                }
+            } else {
+                showScreen(id);
+            }
+        }
+        // Menú principal: click en cada programa
+        document.getElementById('btnIa').onclick = ()=>abrirModulo('iaScreen');
+        document.getElementById('btnFrutas').onclick = ()=>abrirModulo('frutasScreen');
+        document.getElementById('btnAgenda').onclick = ()=>abrirModulo('agendaScreen');
+        document.getElementById('btnCalc').onclick = ()=>abrirModulo('calcScreen');
+        document.getElementById('btnCiclos').onclick = ()=>abrirModulo('ciclosScreen');
+        document.getElementById('btnCombos').onclick = ()=>abrirModulo('combosScreen');
+        document.getElementById('btnComparacion').onclick = ()=>abrirModulo('comparacionScreen');
+        // Selección idioma para módulos (excepto IA)
+        document.getElementById('btnLangContinue').onclick = async function() {
+            if(moduloPendiente){
+                const lang = document.getElementById('selectedLang').value;
+                idiomaModulo[moduloPendiente]=lang;
+                showScreen(moduloPendiente);
+                traducirUI(moduloPendiente, lang);
+            }
+            moduloPendiente = null;
+        };
+        // Traduce el texto UI visible del módulo al idioma destino
+        async function traducirUI(id, lang) {
+            if(lang==="es") return; // nada que traducir
+            if(id==="frutasScreen"){
+                const frases = ["Lista de Frutas","Agregar fruta...","Agregar","Eliminar seleccionada"];
+                const ids = ["modTitleFrutas","frutaInputEspecial","addFrutaEspecialBtn","delFrutaEspecialBtn"];
+                const traducidas = await traducirUIFrases(frases,lang);
+                ids.forEach((id,ix)=>{ let el=document.getElementById(id); if(el){ if(el.tagName==="INPUT")el.placeholder=traducidas[ix];else el.textContent=traducidas[ix]; }});
+                // Traduce botones de frutas
+                const btns = document.querySelectorAll('#frutasScreen [data-fruta]');
+                const frutas = Array.from(btns).map(b=>b.textContent);
+                const tradF = await traducirUIFrases(frutas,lang);
+                btns.forEach((b,i)=>b.textContent=tradF[i]);
+            }
+            if(id==="agendaScreen"){
+                const frases = ["Agenda","Escribe una tarea...","Agregar","Pendientes","Seleccionados"];
+                const ids = ["modTitleAgenda","inputTarea","addTareaBtn","lblPendientes","lblSeleccionados"];
+                const traducidas = await traducirUIFrases(frases,lang);
+                ids.forEach((id,ix)=>{ let el=document.getElementById(id); if(el){ if(el.tagName==="INPUT")el.placeholder=traducidas[ix];else el.textContent=traducidas[ix]; }});
+            }
+            if(id==="calcScreen"){
+                const frases = ["Calculadora Interactiva","Elige una operación","Primer número","Segundo número","Calcular"];
+                const ids = ["modTitleCalc","operation","num1","num2","calcBtn"];
+                const traducidas = await traducirUIFrases(frases,lang);
+                document.getElementById(ids[0]).textContent=traducidas[0];
+                document.getElementById(ids[2]).placeholder=traducidas[2];
+                document.getElementById(ids[3]).placeholder=traducidas[3];
+                document.getElementById(ids[4]).textContent=traducidas[4];
+                // Traduce las opciones del select
+                const opciones=["Elige una operación","Sumar (+)","Restar (−)","Multiplicar (×)","Dividir (÷)","Potencia (^)","Raíz cuadrada (√)","Módulo (%)","Máximo","Mínimo"];
+                const optsTrad = await traducirUIFrases(opciones,lang);
+                const opSel = document.getElementById("operation").options;
+                for(let i=0;i<opSel.length;i++) opSel[i].text=optsTrad[i];
+            }
+            if(id==="ciclosScreen"){
+                const frases = ["Ciclo de Números","¿Hasta qué número deseas sumar?","Calcular suma"];
+                const ids = ["modTitleCiclos","lblPreguntaCiclos","sumarCiclosBtn"];
+                const traducidas = await traducirUIFrases(frases,lang);
+                ids.forEach((id,ix)=>{ let el=document.getElementById(id); if(el){el.textContent=traducidas[ix];}});
+            }
+            if(id==="combosScreen"){
+                const frases = ["Menú de Combos","Ver resumen y total"];
+                const ids = ["modTitleCombos","combosResumenBtn"];
+                const traducidas = await traducirUIFrases(frases,lang);
+                ids.forEach((id,ix)=>{ let el=document.getElementById(id); if(el){el.textContent=traducidas[ix];}});
+            }
+            if(id==="comparacionScreen"){
+                const frases = ["Comparar Tres Números","Número a","Número b","Número c","Comparar"];
+                const ids = ["modTitleComparacion","numA","numB","numC","compBtn"];
+                const traducidas = await traducirUIFrases(frases,lang);
+                document.getElementById(ids[0]).textContent=traducidas[0];
+                document.getElementById(ids[1]).placeholder=traducidas[1];
+                document.getElementById(ids[2]).placeholder=traducidas[2];
+                document.getElementById(ids[3]).placeholder=traducidas[3];
+                document.getElementById(ids[4]).textContent=traducidas[4];
+            }
+        }
+        // --------- IA de VOCES ---------
+        document.getElementById('iaSpeakBtn').onclick = async function () {
+            const text = document.getElementById('ia-text').value.trim();
+            const lang = document.getElementById('lang-ia-select').value;
+            const style = document.getElementById('style-select').value;
+            if (!text) return alert('Escribe un texto.');
+            const styleConfig = {
+                robotic: {pitch: 1, rate: 1},
+                deep: {pitch: 0.7, rate: 1},
+                high: {pitch: 1.7, rate: 1},
+                neutral: {pitch: 1, rate: 1},
+                fast: {pitch: 1, rate: 1.5},
+                slow: {pitch: 1, rate: 0.7}
+            };
+            // Primero el texto original en español
+            const utter1 = new SpeechSynthesisUtterance(text);
+            utter1.lang = "es";
+            utter1.pitch = styleConfig[style].pitch;
+            utter1.rate = styleConfig[style].rate;
+            window.speechSynthesis.speak(utter1);
+
+            utter1.onend = async () => {
+                // Anuncia a qué idioma va a traducir
+                let aviso = "Traducción a "+(langNames[lang]||lang)+":";
+                let avisoTrad = aviso;
+                if(lang!=="es"){
+                    // Intenta traducir "Traducción a X" al idioma de destino
+                    try {
+                        const tAviso = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=${lang}&dt=t&q=${encodeURIComponent(aviso)}`);
+                        const dAviso = await tAviso.json();
+                        avisoTrad = dAviso[0][0][0];
+                    }catch{}
+                }
+                const utter2 = new SpeechSynthesisUtterance(avisoTrad);
+                utter2.lang = lang;
+                window.speechSynthesis.speak(utter2);
+                // Traduce el texto
+                utter2.onend = async () => {
+                    let translated = text;
+                    if(lang!=="es"){
+                        try {
+                            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${lang}&dt=t&q=${encodeURIComponent(text)}`);
+                            const data = await res.json();
+                            translated = data[0][0][0] || text;
+                        } catch {}
+                    }
+                    const utter3 = new SpeechSynthesisUtterance(translated);
+                    utter3.lang = lang;
+                    utter3.pitch = styleConfig[style].pitch;
+                    utter3.rate = styleConfig[style].rate;
+                    window.speechSynthesis.speak(utter3);
+                };
+            };
+        };
+        // --------- FRUTAS ----------
+        const frutasPredeterminadas = ["Mango", "Kiwi", "Papaya", "Sandía", "Lima", "Granada", "Durazno", "Mandarina"];
+        const frutasListEspecial = document.getElementById('frutasListEspecial');
+        let frutasEspecial = frutasPredeterminadas.slice();
+        let idxEspecial = -1;
+        function renderFrutasEspecial() {
+            frutasListEspecial.innerHTML = "";
+            frutasEspecial.forEach((f, idx) => {
+                const li = document.createElement('li');
+                li.textContent = f;
+                if (idxEspecial === idx) li.classList.add('selected');
+                li.onclick = async () => {
+                    idxEspecial = idx; renderFrutasEspecial();
+                    let lang = idiomaModulo["frutasScreen"] || "es";
+                    let nombre = f;
+                    // Si no es español, traduce la fruta antes de decirla
+                    if(lang!=="es"){
+                        try {
+                            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=${lang}&dt=t&q=${encodeURIComponent(f)}`);
+                            const data = await res.json();
+                            nombre = data[0][0][0];
+                        } catch{}
+                    }
+                    const u = new SpeechSynthesisUtterance(nombre);
+                    u.lang = lang;
+                    window.speechSynthesis.speak(u);
+                }
+                frutasListEspecial.appendChild(li);
+            });
+        }
+        renderFrutasEspecial();
+        document.querySelectorAll('#frutasScreen [data-fruta]').forEach(btn => {
+            btn.onclick = () => {
+                frutasEspecial.push(btn.dataset.fruta);
+                renderFrutasEspecial();
+            }
+        });
+        document.getElementById('addFrutaEspecialBtn').onclick = () => {
+            const val = document.getElementById('frutaInputEspecial').value.trim();
+            if (val) frutasEspecial.push(val);
+            document.getElementById('frutaInputEspecial').value = '';
+            renderFrutasEspecial();
+        }
+        document.getElementById('delFrutaEspecialBtn').onclick = () => {
+            if (idxEspecial !== -1) frutasEspecial.splice(idxEspecial, 1);
+            idxEspecial = -1;
+            renderFrutasEspecial();
+        }
+        // --------- AGENDA ----------
+        const inputTarea = document.getElementById('inputTarea');
+        const inputFecha = document.getElementById('inputFecha');
+        const addTareaBtn = document.getElementById('addTareaBtn');
+        const list1 = document.getElementById('list1');
+        const list2 = document.getElementById('list2');
+        function speakModulo(text, moduloId) {
+            let lang = idiomaModulo[moduloId]||"es";
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = lang;
+            window.speechSynthesis.speak(u);
+        }
+        function addTarea(texto, fecha) {
+            const li = document.createElement('li');
+            li.textContent = texto + (fecha ? " - "+fecha : "");
+            li.onclick = function () {
+                if (li.parentNode === list1) { list2.appendChild(li);}
+                let txt = texto;
+                if (fecha) txt += " para el " + fecha;
+                speakModulo("Tarea seleccionada: "+txt,"agendaScreen");
+            };
+            li.ondblclick = function () { if (li.parentNode === list2) list1.appendChild(li);}
+            list1.appendChild(li);
+            let txt = texto;
+            if (fecha) txt += " para el " + fecha;
+            speakModulo("Tarea agregada: "+txt,"agendaScreen");
+        }
+        addTareaBtn.onclick = () => {
+            if (inputTarea.value.trim()) {
+                addTarea(inputTarea.value.trim(), inputFecha.value);
+                inputTarea.value = '';
+                inputFecha.value = '';
+            }
+        };
+        inputTarea.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && this.value.trim() !== "") {
+                addTarea(this.value.trim(), inputFecha.value);
+                this.value = '';
+                inputFecha.value = '';
+                e.preventDefault();
+            }
+        });
+        // --------- CALCULADORA ----------
+        const operation = document.getElementById('operation');
+        const num1 = document.getElementById('num1');
+        const num2 = document.getElementById('num2');
+        const result = document.getElementById('result');
+        const calcBtn = document.getElementById('calcBtn');
+        function setCalcVisibility() {
+            const op = operation.value;
+            document.getElementById('input1Container').style.display = 'none';
+            document.getElementById('input2Container').style.display = 'none';
+            if (op === "sqrt") {
+                document.getElementById('input1Container').style.display = '';
+                num1.placeholder = "Número";
+            } else if (op) {
+                document.getElementById('input1Container').style.display = '';
+                document.getElementById('input2Container').style.display = '';
+            }
+        }
+        operation.onchange = setCalcVisibility;
+        setCalcVisibility();
+        calcBtn.onclick = () => {
+            const op = operation.value;
+            let n1 = parseFloat(num1.value);
+            let n2 = parseFloat(num2.value);
+            let res = "";
+            if (!op) {result.textContent = ""; return;}
+            if (["add", "subtract", "multiply", "divide", "power", "mod", "max", "min"].includes(op) && (isNaN(n1) || isNaN(n2))) {
+                result.textContent = "Por favor ingresa ambos números."; return;
+            }
+            if (op === "sqrt") {
+                if (isNaN(n1)) {result.textContent = "Por favor ingresa un número."; return;}
+                res = Math.sqrt(n1);
+            } else if (op === "add") res = n1 + n2;
+            else if (op === "subtract") res = n1 - n2;
+            else if (op === "multiply") res = n1 * n2;
+            else if (op === "divide") {
+                if (n2 === 0) {result.textContent = "No se puede dividir por cero."; return;}
+                res = n1 / n2;
+            } else if (op === "power") res = Math.pow(n1, n2);
+            else if (op === "mod") res = n1 % n2;
+            else if (op === "max") res = Math.max(n1, n2);
+            else if (op === "min") res = Math.min(n1, n2);
+            let txt = "Resultado: " + res;
+            result.textContent = txt;
+            speakModulo(txt,"calcScreen");
+        };
+        // --------- CICLOS ----------
+        document.getElementById('sumarCiclosBtn').onclick = function () {
+            const hasta = parseInt(document.getElementById('hastaNum').value);
+            let res = 0;
+            const barrasDiv = document.getElementById('ciclosBarras');
+            barrasDiv.innerHTML = "";
+            if (isNaN(hasta) || hasta < 1) {
+                document.getElementById('ciclosRes').textContent = "Ingresa un número válido mayor que 0";
+                return;
+            }
+            let suma = 0;
+            for (let i = 1; i <= hasta; i++) {
+                suma += i;
+                const barra = document.createElement('div');
+                barra.style.background = "linear-gradient(180deg, #22b0ff, #23233a 60%)";
+                barra.style.width = "16px"; barra.style.borderRadius = "6px 6px 0 0"; barra.style.transition = "height 0.5s";
+                barra.title = `Suma hasta ${i}: ${suma}`;
+                barra.style.height = "10px";
+                barrasDiv.appendChild(barra);
+                setTimeout(() => {
+                    barra.style.height = `${10 + 50 * (suma / (hasta * (hasta + 1) / 2))}px`;
+                }, 40 * i);
+            }
+            let txt = `La suma de los números del 1 al ${hasta} es: ${suma}`;
+            document.getElementById('ciclosRes').textContent = txt;
+            speakModulo(txt,"ciclosScreen");
+        }
+        // --------- COMBOS ----------
+        const combosData = [
+            {comida: "Hamburguesa sencilla", postre: "3 rebanadas de manzana", bebida: "Coca-cola de 600 ml", precio: 88},
+            {comida: "Hamburguesa doble", postre: "Malteada de chocolate", bebida: "Papas de onda con 600 ml", precio: 98},
+            {comida: "Chilaquiles verdes", postre: "Pastel de 3 leches", bebida: "Agua de horchata, 1 litro", precio: 140},
+            {comida: "Tacos al pastor", postre: "Gelatina de mango", bebida: "Limonada", precio: 75},
+            {comida: "Hot dog especial", postre: "Brownie", bebida: "Refresco de naranja", precio: 82},
+            {comida: "Ensalada César", postre: "Yogur con frutos rojos", bebida: "Agua mineral", precio: 95}
+        ];
+        const combosListDiv = document.getElementById('combosList');
+        combosListDiv.innerHTML = "";
+        combosData.forEach((combo, idx) => {
+            const label = document.createElement('label');
+            label.style.display = "block";
+            label.style.color = "var(--naranja)";
+            label.style.background = "#1a1000";
+            label.style.border = "1.7px solid var(--naranja)";
+            label.style.padding = "10px 0";
+            label.style.borderRadius = "14px";
+            label.style.marginBottom = "6px";
+            label.innerHTML = `<input type="checkbox" class="combo-checkbox" value="${idx}"> <b>Combo ${idx+1}</b>: ${combo.comida} + ${combo.postre} + ${combo.bebida} ($${combo.precio})`;
+            combosListDiv.appendChild(label);
+        });
+        document.getElementById('combosResumenBtn').onclick = () => {
+            const boxes = document.querySelectorAll('.combo-checkbox');
+            let sel = [];
+            boxes.forEach((box, idx) => {
+                if (box.checked) {sel.push(idx);}
+            });
+            if (sel.length === 0) {
+                document.getElementById('combosSummary').textContent = "Selecciona al menos un combo.";
+                return;
+            }
+            let resumen = "", total = 0;
+            let comidas = [], postres = [], bebidas = [];
+            sel.forEach(idx => {
+                const c = combosData[idx];
+                comidas.push(c.comida);
+                postres.push(c.postre);
+                bebidas.push(c.bebida);
+                total += c.precio;
+            });
+            let descuento = 0;
+            if (sel.includes(0) && sel.includes(2) && sel.includes(3)) descuento = 0.15;
+            if (sel.includes(1) && sel.includes(3) && sel.includes(5)) descuento = 0.12;
+            let txt = `Tu selección:\nComidas: ${comidas.join(", ")}\nPostres: ${postres.join(", ")}\nBebidas: ${bebidas.join(", ")}\nTotal: $${total}`;
+            if (descuento > 0) {
+                let rebaja = Math.round(total * descuento);
+                txt += `\nDescuento aplicado: ${descuento * 100}% ($${rebaja} menos)\nTotal con descuento: $${total - rebaja}`;
+            }
+            document.getElementById('combosSummary').textContent = txt.replace(/\n/g, "\n");
+            speakModulo(txt.replace(/\n/g, ". "),"combosScreen");
+        };
+        // --------- COMPARACIÓN ----------
+        document.getElementById('compBtn').onclick = function () {
+            let a = Number(document.getElementById('numA').value);
+            let b = Number(document.getElementById('numB').value);
+            let c = Number(document.getElementById('numC').value);
+            let mayor = Math.max(a, b, c);
+            let menor = Math.min(a, b, c);
+            let r = '';
+            if (a === b && b === c) r = `Todos son iguales: ${a}`;
+            else r = `El mayor es: ${mayor}, el menor es: ${menor}`;
+            document.getElementById('compRes').textContent = r;
+            speakModulo(r,"comparacionScreen");
+        }
+    </script>
+</body>
+</html>
